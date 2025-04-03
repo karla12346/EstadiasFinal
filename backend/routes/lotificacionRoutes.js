@@ -8,19 +8,19 @@ const {
     eliminarLotificacion
 } = require('../controllers/lotificacionController');
 
-// Insertar una lotificación
+// Ruta para crear lotificación (POST)
 router.post('/', insertarLotificacion);
 
-// Obtener todas las lotificaciones
+// Ruta para obtener todas las lotificaciones (GET)
 router.get('/', obtenerLotificaciones);
 
-// Obtener una lotificación por ID
+// Ruta para obtener una lotificación específica (GET)
 router.get('/:id', obtenerLotificacionPorId);
 
-// Actualizar una lotificación
+// Ruta para actualizar una lotificación (PUT)
 router.put('/:id', actualizarLotificacion);
 
-// Eliminar una lotificación
+// Ruta para eliminar una lotificación (DELETE)
 router.delete('/:id', eliminarLotificacion);
 
 module.exports = router;

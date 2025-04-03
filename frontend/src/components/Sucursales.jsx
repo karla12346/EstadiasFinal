@@ -21,7 +21,7 @@ const MUNICIPIOS_AGS = [
 
 const Sucursales = () => {
   const { user } = useAuth();
-  const [sucursales, setSucursales] = useState([]);
+  const [locales, setLocales] = useState([]);
   const [formData, setFormData] = useState({ 
     nombre: "", 
     direccion: "",
@@ -32,7 +32,7 @@ const Sucursales = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Obtener sucursales
+  // Obtener locales comerciales
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -40,10 +40,10 @@ const Sucursales = () => {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       
-      if (!response.ok) throw new Error("Error al cargar sucursales");
+      if (!response.ok) throw new Error("Error al cargar locales comerciales");
 
       const data = await response.json();
-      setSucursales(data);
+      setLocales(data);
       setError("");
     } catch (err) {
       setError("Error obteniendo datos: " + err.message);
@@ -90,7 +90,7 @@ const Sucursales = () => {
 
       setFormData({ nombre: "", direccion: "", municipio: "" });
       setEditId(null);
-      setSuccess(editId ? "Sucursal actualizada" : "Sucursal creada");
+      setSuccess(editId ? "Local comercial actualizado" : "Local comercial creado");
       fetchData();
     } catch (err) {
       setError("Error: " + err.message);
@@ -100,19 +100,19 @@ const Sucursales = () => {
     }
   };
 
-  // Editar sucursal
-  const handleEdit = (sucursal) => {
+  // Editar local comercial
+  const handleEdit = (local) => {
     setFormData({
-      nombre: sucursal.nombre,
-      direccion: sucursal.direccion,
-      municipio: sucursal.municipio || ""
+      nombre: local.nombre,
+      direccion: local.direccion,
+      municipio: local.municipio || ""
     });
-    setEditId(sucursal._id);
+    setEditId(local._id);
   };
 
-  // Eliminar sucursal
+  // Eliminar local comercial
   const handleDelete = async (id) => {
-    if (!window.confirm("¿Estás seguro de eliminar esta sucursal?")) return;
+    if (!window.confirm("¿Estás seguro de eliminar este local comercial?")) return;
 
     setLoading(true);
     try {
@@ -123,7 +123,7 @@ const Sucursales = () => {
 
       if (!response.ok) throw new Error("Error al eliminar");
 
-      setSuccess("Sucursal eliminada correctamente");
+      setSuccess("Local comercial eliminado correctamente");
       fetchData();
     } catch (err) {
       setError("Error al eliminar: " + err.message);
@@ -136,7 +136,7 @@ const Sucursales = () => {
     <div style={styles.container}>
       {/* Encabezado con menú desplegable */}
       <div style={styles.header}>
-        <h1 style={styles.title}>Gestión de Sucursales</h1>
+        <h1 style={styles.title}>Gestión de Locales Comerciales</h1>
         <DropdownMenu />
       </div>
 
@@ -155,7 +155,7 @@ const Sucursales = () => {
       {/* Formulario */}
       <form onSubmit={handleSubmit} style={styles.form}>
         <div style={styles.formGroup}>
-          <label style={styles.label}>Nombre de la Sucursal</label>
+          <label style={styles.label}>Nombre del Local Comercial</label>
           <input
             type="text"
             name="nombre"
@@ -212,7 +212,7 @@ const Sucursales = () => {
           )}
           <button
             type="submit"
-            style={styles.submitButton}
+            style={editId ? styles.updateButton : styles.submitButton}
             disabled={loading}
           >
             {loading ? 'Procesando...' : editId ? 'Actualizar' : 'Guardar'}
@@ -220,11 +220,11 @@ const Sucursales = () => {
         </div>
       </form>
 
-      {/* Lista de sucursales */}
+      {/* Lista de locales comerciales */}
       {loading ? (
-        <p style={styles.loadingText}>Cargando sucursales...</p>
-      ) : sucursales.length === 0 ? (
-        <p style={styles.noDataText}>No hay sucursales registradas.</p>
+        <p style={styles.loadingText}>Cargando locales comerciales...</p>
+      ) : locales.length === 0 ? (
+        <p style={styles.noDataText}>No hay locales comerciales registrados.</p>
       ) : (
         <div style={styles.tableContainer}>
           <table style={styles.table}>
@@ -237,20 +237,20 @@ const Sucursales = () => {
               </tr>
             </thead>
             <tbody>
-              {sucursales.map((sucursal) => (
-                <tr key={sucursal._id} style={styles.tableRow}>
-                  <td style={styles.tableCell}>{sucursal.nombre}</td>
-                  <td style={styles.tableCell}>{sucursal.direccion}</td>
-                  <td style={styles.tableCell}>{sucursal.municipio || "No especificado"}</td>
+              {locales.map((local) => (
+                <tr key={local._id} style={styles.tableRow}>
+                  <td style={styles.tableCell}>{local.nombre}</td>
+                  <td style={styles.tableCell}>{local.direccion}</td>
+                  <td style={styles.tableCell}>{local.municipio || "No especificado"}</td>
                   <td style={styles.tableCell}>
                     <button
-                      onClick={() => handleEdit(sucursal)}
+                      onClick={() => handleEdit(local)}
                       style={styles.editButton}
                     >
                       Editar
                     </button>
                     <button
-                      onClick={() => handleDelete(sucursal._id)}
+                      onClick={() => handleDelete(local._id)}
                       style={styles.deleteButton}
                     >
                       Eliminar
@@ -266,7 +266,7 @@ const Sucursales = () => {
   );
 };
 
-// Estilos (se mantienen igual que en tu versión original)
+// Estilos actualizados
 const styles = {
   container: {
     maxWidth: "1200px",
@@ -316,7 +316,7 @@ const styles = {
     marginTop: "20px",
   },
   submitButton: {
-    backgroundColor: "#4299e1",
+    backgroundColor: "#38a169", // Verde para acciones positivas
     color: "#ffffff",
     padding: "10px 20px",
     borderRadius: "4px",
@@ -324,6 +324,22 @@ const styles = {
     cursor: "pointer",
     fontSize: "14px",
     transition: "background-color 0.3s ease",
+    ":hover": {
+      backgroundColor: "#2f855a"
+    }
+  },
+  updateButton: {
+    backgroundColor: "#3182ce", // Azul para actualizar
+    color: "#ffffff",
+    padding: "10px 20px",
+    borderRadius: "4px",
+    border: "none",
+    cursor: "pointer",
+    fontSize: "14px",
+    transition: "background-color 0.3s ease",
+    ":hover": {
+      backgroundColor: "#2c5282"
+    }
   },
   cancelButton: {
     backgroundColor: "#e2e8f0",
@@ -334,6 +350,9 @@ const styles = {
     cursor: "pointer",
     fontSize: "14px",
     transition: "background-color 0.3s ease",
+    ":hover": {
+      backgroundColor: "#cbd5e0"
+    }
   },
   loadingText: {
     textAlign: "center",
@@ -381,7 +400,7 @@ const styles = {
   },
   tableRow: {
     borderBottom: "1px solid #e2e8f0",
-    "&:hover": {
+    ":hover": {
       backgroundColor: "#f7fafc",
     },
   },
@@ -391,7 +410,7 @@ const styles = {
     color: "#4a5568",
   },
   editButton: {
-    backgroundColor: "#ecc94b",
+    backgroundColor: "#3182ce", // Azul para editar
     color: "#ffffff",
     padding: "6px 12px",
     borderRadius: "4px",
@@ -400,6 +419,9 @@ const styles = {
     fontSize: "14px",
     marginRight: "8px",
     transition: "background-color 0.3s ease",
+    ":hover": {
+      backgroundColor: "#2c5282"
+    }
   },
   deleteButton: {
     backgroundColor: "#f56565",
@@ -410,6 +432,9 @@ const styles = {
     cursor: "pointer",
     fontSize: "14px",
     transition: "background-color 0.3s ease",
+    ":hover": {
+      backgroundColor: "#c53030"
+    }
   },
 };
 

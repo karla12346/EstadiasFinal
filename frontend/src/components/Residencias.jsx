@@ -9,8 +9,9 @@ const Residencias = () => {
   const [residencias, setResidencias] = useState([]);
   const [modelos, setModelos] = useState([]);
   const [formData, setFormData] = useState({ 
-    precioventa: "", 
-    modelo_idmodelo: "" 
+    estatus: "Libre", // Cambiado de precioventa a estatus
+    modelo_idmodelo: "",
+    hora: "" // Nuevo campo para la hora
   });
   const [editId, setEditId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -80,7 +81,7 @@ const Residencias = () => {
         throw new Error(errorData.message || "Error en la petición");
       }
 
-      setFormData({ precioventa: "", modelo_idmodelo: "" });
+      setFormData({ estatus: "Libre", modelo_idmodelo: "", hora: "" });
       setEditId(null);
       fetchData();
     } catch (err) {
@@ -94,8 +95,9 @@ const Residencias = () => {
   const handleEdit = (residencia) => {
     setEditId(residencia._id);
     setFormData({
-      precioventa: residencia.precioventa,
-      modelo_idmodelo: residencia.modelo_idmodelo._id || residencia.modelo_idmodelo
+      estatus: residencia.estatus || "Libre",
+      modelo_idmodelo: residencia.modelo_idmodelo._id || residencia.modelo_idmodelo,
+      hora: residencia.hora || ""
     });
   };
 
@@ -122,14 +124,6 @@ const Residencias = () => {
     }
   };
 
-  // Formatear precio
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('es-GT', {
-      style: 'currency',
-      currency: 'GTQ'
-    }).format(price);
-  };
-
   // Estilos
   const styles = {
     container: {
@@ -138,14 +132,12 @@ const Residencias = () => {
       padding: "20px",
       backgroundColor: "#f7fafc",
       minHeight: "100vh",
-      position: "relative", // Añadido para el menú desplegable
     },
     header: {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
       marginBottom: "20px",
-      position: "relative", // Importante para el menú desplegable
     },
     title: {
       fontSize: "24px",
@@ -159,7 +151,13 @@ const Residencias = () => {
       boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
       marginBottom: "20px",
     },
+    formRow: {
+      display: "flex",
+      gap: "20px",
+      marginBottom: "16px"
+    },
     formGroup: {
+      flex: 1,
       marginBottom: "16px",
     },
     label: {
@@ -175,6 +173,14 @@ const Residencias = () => {
       border: "1px solid #e2e8f0",
       fontSize: "14px",
     },
+    select: {
+      width: "100%",
+      padding: "10px",
+      borderRadius: "4px",
+      border: "1px solid #e2e8f0",
+      fontSize: "14px",
+      backgroundColor: "white",
+    },
     submitButton: {
       backgroundColor: "#4299e1",
       color: "#ffffff",
@@ -184,6 +190,9 @@ const Residencias = () => {
       cursor: "pointer",
       fontSize: "14px",
       transition: "background-color 0.3s ease",
+      ":hover": {
+        backgroundColor: "#3182ce"
+      }
     },
     loadingText: {
       textAlign: "center",
@@ -221,12 +230,20 @@ const Residencias = () => {
       color: "#718096",
       marginBottom: "4px",
     },
+    statusBadge: {
+      display: "inline-block",
+      padding: "4px 8px",
+      borderRadius: "12px",
+      fontSize: "12px",
+      fontWeight: "bold",
+      textTransform: "uppercase"
+    },
     actions: {
       display: "flex",
       gap: "8px",
     },
     editButton: {
-      backgroundColor: "#ecc94b",
+      backgroundColor: "#3182ce",
       color: "#ffffff",
       padding: "8px 16px",
       borderRadius: "4px",
@@ -234,6 +251,9 @@ const Residencias = () => {
       cursor: "pointer",
       fontSize: "14px",
       transition: "background-color 0.3s ease",
+      ":hover": {
+        backgroundColor: "#2c5282"
+      }
     },
     deleteButton: {
       backgroundColor: "#f56565",
@@ -244,7 +264,23 @@ const Residencias = () => {
       cursor: "pointer",
       fontSize: "14px",
       transition: "background-color 0.3s ease",
+      ":hover": {
+        backgroundColor: "#c53030"
+      }
     },
+  };
+
+  // Estilos dinámicos para los estatus
+  const getStatusStyle = (status) => {
+    switch(status) {
+      case "Cita":
+        return { ...styles.statusBadge, backgroundColor: "#f6e05e", color: "#744210" };
+      case "Vendido":
+        return { ...styles.statusBadge, backgroundColor: "#f56565", color: "white" };
+      case "Libre":
+      default:
+        return { ...styles.statusBadge, backgroundColor: "#68d391", color: "white" };
+    }
   };
 
   return (
@@ -270,43 +306,54 @@ const Residencias = () => {
 
       {/* Formulario */}
       <form onSubmit={handleSubmit} style={styles.form}>
-        <div style={{ display: "flex", gap: "20px" }}>
-          {/* Columna 1 */}
-          <div style={{ flex: 1 }}>
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Precio de Venta</label>
-              <input
-                type="number"
-                name="precioventa"
-                value={formData.precioventa}
-                onChange={handleChange}
-                style={styles.input}
-                required
-                min="0"
-                step="0.01"
-              />
-            </div>
+        <div style={styles.formRow}>
+          {/* Columna 1 - Estatus */}
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Estatus *</label>
+            <select
+              name="estatus"
+              value={formData.estatus}
+              onChange={handleChange}
+              style={styles.select}
+              required
+            >
+              <option value="Libre">Libre</option>
+              <option value="Cita">Cita</option>
+              <option value="Vendido">Vendido</option>
+            </select>
           </div>
 
-          {/* Columna 2 */}
-          <div style={{ flex: 1 }}>
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Modelo de Residencia</label>
-              <select
-                name="modelo_idmodelo"
-                value={formData.modelo_idmodelo}
-                onChange={handleChange}
-                style={styles.input}
-                required
-              >
-                <option value="">Seleccionar modelo</option>
-                {modelos.map(modelo => (
-                  <option key={modelo._id} value={modelo._id}>
-                    {modelo.folio} - {modelo.metrosconstruccion}m²
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* Columna 2 - Hora */}
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Hora (opcional)</label>
+            <input
+              type="time"
+              name="hora"
+              value={formData.hora}
+              onChange={handleChange}
+              style={styles.input}
+            />
+          </div>
+        </div>
+
+        <div style={styles.formRow}>
+          {/* Modelo de Residencia */}
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Modelo de Residencia *</label>
+            <select
+              name="modelo_idmodelo"
+              value={formData.modelo_idmodelo}
+              onChange={handleChange}
+              style={styles.select}
+              required
+            >
+              <option value="">Seleccionar modelo</option>
+              {modelos.map(modelo => (
+                <option key={modelo._id} value={modelo._id}>
+                  {modelo.folio} - {modelo.metrosconstruccion}m²
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -333,7 +380,10 @@ const Residencias = () => {
                   Modelo: {residencia.modelo_idmodelo?.folio || "N/A"}
                 </p>
                 <p style={styles.residenciaDetail}>
-                  Precio: {formatPrice(residencia.precioventa)}
+                  <span style={getStatusStyle(residencia.estatus)}>
+                    {residencia.estatus || "Libre"}
+                  </span>
+                  {residencia.hora && ` - Hora: ${residencia.hora}`}
                 </p>
                 <p style={styles.residenciaDetail}>
                   Construcción: {residencia.modelo_idmodelo?.metrosconstruccion || "N/A"} m²
